@@ -1,0 +1,236 @@
+package cs1302.gallery;
+
+import javafx.application.Application;
+import javafx.application.Platform;
+import javafx.scene.layout.HBox;
+import javafx.scene.Scene;
+import javafx.stage.Stage;
+import javafx.scene.layout.VBox;
+import javafx.scene.layout.TilePane;
+import javafx.scene.control.MenuBar;
+import javafx.scene.control.Menu;
+import javafx.scene.control.Button;
+import javafx.scene.control.TextField;
+import javafx.scene.text.Text;
+import javafx.geometry.Pos;
+import javafx.scene.layout.Priority;
+import javafx.scene.control.ProgressBar;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParser;
+import java.net.URL;
+import java.util.Scanner;
+import java.io.InputStreamReader;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonArray; 
+import java.net.MalformedURLException;
+import java.io.IOException;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
+import java.util.List;
+import java.util.ArrayList;
+
+/** 
+ * Represents an iTunes GalleryApp.
+ */
+public class GalleryApp extends Application {
+
+    protected VBox vbox;
+    protected HBox hboxMenu;
+    protected HBox hboxBottom;
+    protected HBox hboxTop;
+    protected TilePane tile;
+    protected Menu file;
+    protected MenuBar menuBar;
+    protected Button pauseButton;
+    protected Text text;
+    protected TextField textField;
+    protected Button searchButton;
+    protected ProgressBar progressBar;
+    HBox urlLayer;
+    String URL;
+    JsonArray results;
+    int numResults;
+    JsonObject result;
+    JsonElement artworkUrl100;
+           
+    
+    /** The container for the loaded image. */
+    ImageView imgView;
+
+    /** A default image which loads when the application starts. */
+    private static final String DEFAULT_IMG =
+        "http://cobweb.cs.uga.edu/~mec/cs1302/gui/default.png";
+
+    /** Default height and width for Images. */
+    private static final int DEF_HEIGHT = 100;
+    private static final int DEF_WIDTH = 100;
+
+    private static final ImageView imgView1 = new ImageView();
+    private static final ImageView imgView2 = new ImageView();
+    private static final ImageView imgView3 = new ImageView();
+    private static final ImageView imgView4 = new ImageView();
+    private static final ImageView imgView5 = new ImageView();
+    private static final ImageView imgView6 = new ImageView();
+    private static final ImageView imgView7 = new ImageView();
+    private static final ImageView imgView8 = new ImageView();
+    private static final ImageView imgView9 = new ImageView();
+    private static final ImageView imgView10 = new ImageView();
+    private static final ImageView imgView11 = new ImageView();
+    private static final ImageView imgView12 = new ImageView();
+    private static final ImageView imgView13 = new ImageView();
+    private static final ImageView imgView14 = new ImageView();
+    private static final ImageView imgView15 = new ImageView();
+    private static final ImageView imgView16 = new ImageView();
+    private static final ImageView imgView17 = new ImageView();
+    private static final ImageView imgView18 = new ImageView();
+    private static final ImageView imgView19 = new ImageView();
+    private static final ImageView imgView20 = new ImageView();
+    private static final ImageView[] imgViewArray = {imgView1, imgView2, imgView3, imgView4, imgView5,
+                                                     imgView6, imgView7, imgView8, imgView9, imgView10,
+                                                     imgView11, imgView12, imgView13, imgView14, imgView15,
+                                                     imgView16, imgView17, imgView18, imgView19, imgView20};
+
+    
+    /** 
+     * Runs the app and displays images that match the user input.
+     *
+     * <p>
+     * {@inheritdoc} 
+     */
+    @Override
+    public void start(Stage stage) {
+        HBox pane = new HBox();
+        Scene scene = new Scene(pane);
+        
+        vbox = new VBox();
+        hboxMenu = new HBox();
+        hboxBottom = new HBox();
+        hboxTop = new HBox(5);
+        tile = new TilePane();
+        file = new Menu("File");
+        menuBar = new MenuBar(file);
+        pauseButton = new Button("Pause");
+        text = new Text("Search Query:");
+        textField = new TextField();
+        searchButton = new Button("Update Images");
+        progressBar = new ProgressBar(0.5);
+
+        Image img = new Image(DEFAULT_IMG, DEF_HEIGHT, DEF_WIDTH, false, false);
+        for (ImageView im : imgViewArray) {
+            tile.getChildren().add(im);
+            im.setImage(img);
+        } // for
+        
+        pane.getChildren().add(vbox);
+        vbox.getChildren().addAll(hboxMenu, hboxTop, tile, hboxBottom);
+        hboxMenu.getChildren().add(menuBar);
+        hboxTop.getChildren().addAll(pauseButton, text, textField, searchButton);
+        hboxTop.setAlignment(Pos.CENTER_LEFT);
+        HBox.setHgrow(textField, Priority.ALWAYS);
+        hboxBottom.getChildren().add(progressBar);
+
+        EventHandler<ActionEvent> loadImgHandler = e -> {
+            parseUrl(textField.getCharacters().toString(), imgViewArray);
+        };
+        searchButton.setOnAction(loadImgHandler);
+        stage.setMaxWidth(640);
+        stage.setMaxHeight(480);
+        stage.setTitle("GalleryApp!");
+        stage.setScene(scene);
+        stage.sizeToScene();
+        stage.show();
+    } // start
+
+    /**
+     * Takes in user input and genrates an iTunes URL.
+     */
+    public void parseUrl(String search, ImageView[] imgViewArray) {
+        try {
+            Scanner parseURL = new Scanner(search);
+            String sUrl = "https://itunes.apple.com/search?term=";
+            while (parseURL.hasNext() == true) {
+                sUrl += parseURL.next();
+                if (parseURL.hasNext() == true) {
+                    sUrl += "+";
+                } // if
+            } // while
+            sUrl += "&media=music";
+            URL url = new URL(sUrl);
+            InputStreamReader reader = new InputStreamReader(url.openStream());
+            JsonElement je = JsonParser.parseReader(reader); // parses the JSON
+            JsonObject root = je.getAsJsonObject(); // The first element of JSON
+            results = root.getAsJsonArray("results"); // copies the array of results
+            numResults = results.size(); // size of results array (basically the number of pictures)
+            String artWorkUrl = "";
+            int end = 0;
+	    List<String> imageList = new ArrayList<>();
+	    
+            for (int i = 0; < numResults; i++) {
+                result = results.get(i).getAsJsonObject(); // gets one JSON object or one element of the results array
+                artworkUrl100 = result.get("artworkUrl100"); // gets the artworkURL
+		artWorkUrl = artworkUrl100.toString(); // URL of image
+		artWorkUrl = artWorkUrl.substring(1);
+		end = artWorkUrl.indexOf("\"");
+		artWorkUrl = artWorkUrl.substring(0, end);
+		imageList.add(artWorkUrl);
+	    } // for
+	    
+	    //unique values
+	
+            for (int i = 0; i < 20 && i <= numResults; i++) {
+                result = results.get(i).getAsJsonObject(); // gets one JSON object or one element of the results array
+                artworkUrl100 = result.get("artworkUrl100"); // gets the artworkURL
+                if (artworkUrl100 == null) {
+                    i = i + 1 - 1;
+                } else {
+                    artWorkUrl = artworkUrl100.toString(); // URL of image
+                    artWorkUrl = artWorkUrl.substring(1);
+                    end = artWorkUrl.indexOf("\"");
+                    artWorkUrl = artWorkUrl.substring(0, end);
+                    System.out.println(artWorkUrl);
+
+                    Image newImg = new Image(artWorkUrl);
+                    imgViewArray[i].setImage(newImg); // sets the image
+                } // if
+            } // for
+        } catch (MalformedURLException mue) {
+            System.out.println("invalid");
+        } catch (IOException ioe) {
+            System.out.println("invalid");
+        } // try
+    } // parseUrl
+
+    /** 
+     * Sets the imageview with the correct image.
+     */
+    public void imageLoader(ImageView imgView) {
+    } // ImageLoader
+
+    /**
+     * This class creates a new {@code ActionEvent} object.
+     *
+     * @param value the EventHandler object
+     */    
+    public final void setOnAction(EventHandler<ActionEvent> value) {
+        ActionEvent ae = new ActionEvent();
+    } // setOnAction
+    
+    /**
+     * Loads the image.
+     *
+     * @param e source event
+     */ 
+    private void loadImage(ActionEvent e) {
+
+        try {
+            Image newImg = new Image(URL, DEF_HEIGHT, DEF_WIDTH, false, false);
+            this.imgView.setImage(newImg);
+        } catch (IllegalArgumentException iae) {
+            System.out.println("The supplied URL is invalid");
+        } // try
+        
+    } // loadImage
+    
+} // GalleryApp
